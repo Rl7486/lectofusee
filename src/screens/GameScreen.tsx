@@ -107,7 +107,6 @@ export function GameScreen() {
             setScreen('result');
           } else {
             nextWord();
-            startWordTimer();
           }
         }, 1500);
       } else if (result.isAlmost) {
@@ -212,11 +211,17 @@ export function GameScreen() {
       const timer = setTimeout(() => {
         startListening();
         setWordStatus('listening');
-        startWordTimer();
       }, 500);
       return () => clearTimeout(timer);
     }
-  }, [feedback, isSupported, currentSession, currentWordIndex, startListening, startWordTimer]);
+  }, [feedback, isSupported, currentSession, currentWordIndex, startListening]);
+
+  // Démarrer le timer SEULEMENT quand le micro est vraiment actif
+  useEffect(() => {
+    if (isListening && !feedback) {
+      startWordTimer();
+    }
+  }, [isListening, feedback, startWordTimer]);
 
   // Arrêter l'écoute quand on affiche un feedback
   useEffect(() => {
