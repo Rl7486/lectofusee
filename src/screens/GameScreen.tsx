@@ -13,7 +13,7 @@ import { useUserStore } from '../stores/userStore';
 import { useStatsStore } from '../stores/statsStore';
 import { useSpeechRecognition } from '../hooks/useSpeechRecognition';
 import { matchWord, getEncouragingFeedback } from '../utils/phoneticMatch';
-import { calculateStars, calculateProgress, formatSessionTime } from '../utils/scoreCalculator';
+import { calculateProgress, formatSessionTime } from '../utils/scoreCalculator';
 import { getSessionWords } from '../data/words';
 import { audioManager } from '../utils/audioManager';
 
@@ -76,8 +76,9 @@ export function GameScreen() {
       const responseTime = getElapsedWordTime();
 
       if (result.isCorrect) {
-        // Succès !
-        const stars = calculateStars(responseTime, currentWord.length, selectedLevel);
+        // Succès ! Étoiles basées sur le nombre de tentatives
+        // 1ère tentative = 3 étoiles, 2ème = 2 étoiles, 3ème = 1 étoile
+        const stars = Math.max(1, 4 - currentAttempt);
         setWordStatus('correct');
         setBoosting(true);
 
@@ -114,7 +115,7 @@ export function GameScreen() {
         setWordStatus('almost');
         audioManager.playAlmost();
 
-        if (currentAttempt >= 2) {
+        if (currentAttempt >= 3) {
           // Dernier essai, on passe
           setFeedback({ type: 'almost', stars: 0, message: 'C\'était proche !' });
 
@@ -148,7 +149,7 @@ export function GameScreen() {
         // Mauvaise réponse
         setWordStatus('wrong');
 
-        if (currentAttempt >= 2) {
+        if (currentAttempt >= 3) {
           // Dernier essai
           if (user) {
             recordAttempt(user.id, currentWord, selectedLevel, responseTime, 0, false);
@@ -295,7 +296,7 @@ export function GameScreen() {
             animate={{ opacity: 1 }}
             className="text-yellow-400 text-lg"
           >
-            Essai {currentAttempt}/2
+            Essai {currentAttempt}/3
           </motion.p>
         )}
 
